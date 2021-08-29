@@ -20,7 +20,17 @@ jobs:
         run: >
           RELEASE=$(grep -oP "(?<=DEBIAN_RELEASE=)[a-zA-Z]*$" Dockerfile)
           && echo "TAG=$RELEASE" >> $GITHUB_ENV
-          && echo "RFC3339=$(date -u +'%Y-%m-%dT%H-%M-%SZ')" >> $GITHUB_ENV
+      -
+        name: Extract metadata
+        id: docker_meta
+        uses: docker/metadata-action@v3
+        with:
+          flavor: latest=true
+          tags: |
+            ${{ env.TAG }}
+            type=schedule,prefix=${{ env.TAG }}-,pattern={{date 'YYYYMMDD'}}
+            type=sha,prefix=${{ env.TAG }}-,format=short
+          images: ghcr.io/pgils/debian-pkgdevel
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -42,7 +52,5 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ghcr.io/pgils/debian-pkgdevel:latest
-            ghcr.io/pgils/debian-pkgdevel:${{ env.TAG }}
-            ghcr.io/pgils/debian-pkgdevel:${{ env.TAG }}-${{ env.RFC3339 }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
