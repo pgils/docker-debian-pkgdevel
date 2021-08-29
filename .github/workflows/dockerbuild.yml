@@ -20,6 +20,7 @@ jobs:
         run: >
           RELEASE=$(grep -oP "(?<=DEBIAN_RELEASE=)[a-zA-Z]*$" Dockerfile)
           && echo "TAG=$RELEASE" >> $GITHUB_ENV
+          && echo "RFC3339=$(date -u +'%Y-%m-%dT%H-%M-%SZ')" >> $GITHUB_ENV
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -44,3 +45,4 @@ jobs:
           tags: |
             ghcr.io/pgils/debian-pkgdevel:latest
             ghcr.io/pgils/debian-pkgdevel:${{ env.TAG }}
+            ghcr.io/pgils/debian-pkgdevel:${{ env.TAG }}-${{ env.RFC3339 }}
