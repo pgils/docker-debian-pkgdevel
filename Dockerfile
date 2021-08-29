@@ -1,13 +1,14 @@
 ARG DEBIAN_RELEASE=bullseye
 
-FROM buildpack-deps:${DEBIAN_RELEASE}
+FROM debian:${DEBIAN_RELEASE}
 ARG DEBIAN_RELEASE
 
 RUN echo "deb-src http://deb.debian.org/debian ${DEBIAN_RELEASE} main" \
     > /etc/apt/sources.list.d/main-src.list \
     \
     && apt-get update && apt-get install -qqy --no-install-recommends \
-    dpatch fakeroot devscripts equivs lintian quilt curl vim sudo \
+    build-essential dpkg-dev dpatch fakeroot devscripts equivs lintian \
+    quilt curl vim sudo \
     && rm -rf /var/lib/apt/lists/* \
     \
     && useradd -m -s /bin/bash builder \

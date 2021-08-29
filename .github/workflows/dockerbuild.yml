@@ -2,13 +2,29 @@ name: Build images
 
 on:
   push:
-    branches: main
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
   schedule:
     - cron: '20 2 * * SAT'
 
 jobs:
   multi:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        release:
+          - buster
+          - bullseye
+          - bookworm
+
     steps:
       -
         name: Checkout
@@ -16,20 +32,14 @@ jobs:
         with:
           fetch-depth: 2
       -
-        name: Set release tag
-        run: >
-          RELEASE=$(grep -oP "(?<=DEBIAN_RELEASE=)[a-zA-Z]*$" Dockerfile)
-          && echo "TAG=$RELEASE" >> $GITHUB_ENV
-      -
         name: Extract metadata
         id: docker_meta
         uses: docker/metadata-action@v3
         with:
-          flavor: latest=true
           tags: |
-            ${{ env.TAG }}
-            type=schedule,prefix=${{ env.TAG }}-,pattern={{date 'YYYYMMDD'}}
-            type=sha,prefix=${{ env.TAG }}-,format=short
+            ${{ matrix.release }}
+            type=schedule,prefix=${{ matrix.release }}-,pattern={{date 'YYYYMMDD'}}
+            type=sha,prefix=${{ matrix.release }}-,format=short
           images: ghcr.io/pgils/debian-pkgdevel
       -
         name: Set up QEMU
@@ -50,7 +60,8 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          build-args: "DEBIAN_RELEASE=${{ matrix.release }}"
           platforms: linux/amd64,linux/arm64
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
