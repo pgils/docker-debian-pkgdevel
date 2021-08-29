@@ -14,11 +14,10 @@ jobs:
         with:
           fetch-depth: 2
       -
-        name: Docker meta
-        id: docker_meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ghcr.io/pgils/debian-pkgdevel
+        name: Set release tag
+        run: >
+          RELEASE=$(grep -oP "(?<=DEBIAN_RELEASE=)[a-zA-Z]*$" Dockerfile)
+          && echo "TAG=$RELEASE" >> $GITHUB_ENV
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -40,5 +39,6 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          labels: ${{ steps.docker_meta.outputs.labels }}
+          tags: |
+            ghcr.io/pgils/debian-pkgdevel:latest
+            ghcr.io/pgils/debian-pkgdevel:${{ env.TAG }}
