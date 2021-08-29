@@ -3,6 +3,8 @@ name: Build images
 on:
   push:
     branches: main
+  schedule:
+    - cron: '20 2 * * SAT'
 
 jobs:
   multi:
