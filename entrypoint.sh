@@ -8,5 +8,5 @@ groupmod -g "$gid" builder
 usermod -u "$uid" builder
 
 sudo --user=builder --set-home --chdir=/workdir \
-    --preserve-env=DEBEMAIL EDITOR=vim \
+    --preserve-env=DEBEMAIL EDITOR=vim -- \
     "${@:-bash}"
