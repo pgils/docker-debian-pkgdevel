@@ -3,6 +3,7 @@ ARG DEBIAN_RELEASE=bullseye
 FROM debian:${DEBIAN_RELEASE}
 ARG DEBIAN_RELEASE
 
+# hadolint ignore=DL3008
 RUN echo "deb-src http://deb.debian.org/debian ${DEBIAN_RELEASE} main" \
     > /etc/apt/sources.list.d/main-src.list \
     \
