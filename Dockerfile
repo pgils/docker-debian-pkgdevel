@@ -16,6 +16,7 @@ RUN echo "deb-src http://deb.debian.org/debian ${DEBIAN_RELEASE} main" \
 
 
 COPY entrypoint.sh /
+COPY buildpkgs /usr/local/bin/
 COPY --chown=builder quiltrc /home/builder/.quiltrc
 
 VOLUME [ "/workdir" ]
