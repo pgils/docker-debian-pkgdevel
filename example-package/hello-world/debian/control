@@ -1,0 +1,11 @@
+Source: hello-world
+Maintainer: Pelle van Gils <pelle@vangils.xyz>
+Section: misc
+Priority: optional
+Standards-Version: 4.5.0
+Build-Depends: debhelper (>= 13)
+
+Package: hello-world
+Architecture: any
+Depends: ${misc:Depends}
+Description: Demo package
