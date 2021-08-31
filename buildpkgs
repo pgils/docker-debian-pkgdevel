@@ -131,7 +131,6 @@ while true; do
 done
 
 [ -z "${packages_dir:-}" ] && print_error "packages-dir is not set"
-[ -z "${output_dir:-}" ] && print_error "output is not set"
 
 case "${1:-}" in
     source)
@@ -139,6 +138,9 @@ case "${1:-}" in
         exit $?
         ;;
     build)
+
+        [ -z "${output_dir:-}" ] && print_error "output is not set"
+
         # Refresh package index for build dependencies
         sudo apt-get update
 
