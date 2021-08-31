@@ -104,8 +104,8 @@ repo() {
     cp -v "$packages_dir"/*/*.deb "$output_dir"/packages
 
     # Generate package indexes
-    ( cd "$output_dir"/packages; dpkg-scanpackages . | gzip -9c > Packages.gz )
-    ( cd "$output_dir"/sources; dpkg-scansources . | gzip -9c > Sources.gz )
+    ( cd "$output_dir"; dpkg-scanpackages packages/ | gzip -9c > packages/Packages.gz )
+    ( cd "$output_dir"; dpkg-scansources sources/ | gzip -9c > sources/Sources.gz )
 }
 
 while true; do
@@ -131,7 +131,6 @@ while true; do
 done
 
 [ -z "${packages_dir:-}" ] && print_error "packages-dir is not set"
-[ -z "${output_dir:-}" ] && print_error "output is not set"
 
 case "${1:-}" in
     source)
@@ -139,6 +138,9 @@ case "${1:-}" in
         exit $?
         ;;
     build)
+
+        [ -z "${output_dir:-}" ] && print_error "output is not set"
+
         # Refresh package index for build dependencies
         sudo apt-get update
 
