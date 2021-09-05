@@ -53,13 +53,25 @@ fetch_sources() {
 
     print_info "Fetching sources for '$pkgname'"
 
-    orig="${pkgname}_${pkgver}.orig.${dist_ext:-tar.gz}"
-    source_dir="${pkgname}-${pkgver}"
+    dist_file="${dist##*/}"
 
-    if ! checksum "${dist_sha256}" "${orig}"; then
-        curl -sSfL -o "${orig}" "${dist}"
-        checksum "${dist_sha256}" "${orig}"
+    if ! checksum "${dist_sha256}" "${dist_file}"; then
+        curl -sSfL -o "${dist_file}" "${dist}"
+        checksum "${dist_sha256}" "${dist_file}"
     fi
+
+    # Store single-binary dist files in an archive
+    if [ "${dist_ext}" = "bin" ]; then
+        dist_ext=tar.gz
+        tar -czf "${dist_file}.${dist_ext}" \
+            --transform 's|^|src/|' "${dist_file}"
+        dist_file+=".${dist_ext}"
+    fi
+
+    orig="${pkgname}_${pkgver}.orig.${dist_ext:-tar.gz}"
+    mv "${dist_file}" "${orig}"
+
+    source_dir="${pkgname}-${pkgver}"
 
     rm -rf "${source_dir}"
     mkdir "${source_dir}"
