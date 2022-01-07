@@ -31,19 +31,20 @@ HEREDOC
 }
 
 _makerepo() {
-    output_dir="${1?Missing output dir parameter}"
+    output_dir="${1:-}"
 
-    print_info "Generating package indexes"
+    [ -z "$output_dir" ] && print_error "Missing output dir parameter"
 
     mkdir -p "$output_dir"/{sources,packages}
 
+    print_info "Copying package files"
     (
     shopt -s globstar nullglob
     cp -v ./**/{*.dsc,*.orig.tar*,*.debian.tar*} "$output_dir"/sources
     cp -v ./**/*.deb "$output_dir"/packages
     )
 
-    # Generate package indexes
+    print_info "Generating package indexes"
     ( cd "$output_dir"; dpkg-scanpackages packages/ | gzip -9c > packages/Packages.gz )
     ( cd "$output_dir"; dpkg-scansources sources/ | gzip -9c > sources/Sources.gz )
 }
