@@ -42,8 +42,9 @@ Example building `hello-world`:
 ```cli
 ❯ ./makepkg -h
 
-  usage: makepkg [-qh]
+  usage: makepkg [-sqh]
 
+    -s, --source        Only fetch sources and exit
     -q, --quiet         Do not output to stdout
     -h, --help          Print this help and exit
 ```

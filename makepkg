@@ -22,8 +22,9 @@ print_error() {
 print_usage() {
     cat <<HEREDOC >&2
 
-  usage: $(basename "${0}") [-qh]
+  usage: $(basename "${0}") [-sqh]
 
+    -s, --source        Only fetch sources and exit
     -q, --quiet         Do not output to stdout
     -h, --help          Print this help and exit
 
