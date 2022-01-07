@@ -18,7 +18,7 @@ RUN echo "deb-src http://deb.debian.org/debian ${DEBIAN_RELEASE} main" \
 
 
 COPY entrypoint.sh /
-COPY makepkg makerepo /usr/local/bin/
+COPY makepkg makerepo updpkgsum /usr/local/bin/
 COPY --chown=builder quiltrc /home/builder/.quiltrc
 
 VOLUME [ "/workdir" ]

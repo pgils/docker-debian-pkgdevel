@@ -49,6 +49,15 @@ Example building `hello-world`:
     -h, --help          Print this help and exit
 ```
 
+### Updating checksum with `updpkgsum`
+
+`updpkgsum` downloads a distfile and writes it's SHA-256 checksum to `pkg.conf`
+
+```cli
+> cd example-package/hello-world
+> updpkgsum
+```
+
 ### Generating repositories with `makerepo`
 
 > This example uses the output from [`hello-world`](#building-custom-packages-with-makepkg)
