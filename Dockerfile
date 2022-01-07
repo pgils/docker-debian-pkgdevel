@@ -13,11 +13,12 @@ RUN echo "deb-src http://deb.debian.org/debian ${DEBIAN_RELEASE} main" \
     && rm -rf /var/lib/apt/lists/* \
     \
     && useradd -m -s /bin/bash builder \
-    && echo 'builder ALL=(ALL) NOPASSWD:/usr/bin/apt-get' >> /etc/sudoers
+    && echo 'builder ALL=(ALL) NOPASSWD:/usr/bin/apt-get' >> /etc/sudoers \
+    && echo 'PS1="\W> "' >> /home/builder/.bashrc
 
 
 COPY entrypoint.sh /
-COPY buildpkgs /usr/local/bin/
+COPY makepkg makerepo updpkgsum /usr/local/bin/
 COPY --chown=builder quiltrc /home/builder/.quiltrc
 
 VOLUME [ "/workdir" ]

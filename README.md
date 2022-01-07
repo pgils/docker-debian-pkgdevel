@@ -5,38 +5,72 @@
 Docker image with tools for developing and building debian packages.
 
 ## Usage
+
 ### Starting the container
 
-```
-$ docker run -ti --rm -v $(pwd):/workdir \
+```cli
+> docker run -ti --rm -v $(pwd):/workdir \
     -e "DEBEMAIL=$(git config --get user.email)" \
     ghcr.io/pgils/debian-pkgdevel:bullseye
 ```
+
 - `uid` and `gid` of the `builder` user in the container are automatically updated to match the ownership of the `/workdir` directory.
 - `DEBEMAIL` should be set if you are editing Changelogs
 
 ### (Re)building package from source repositories
 
-```
-$ apt-get source htop
-$ cd htop-3.0.5/
-$ sudo apt-get build-dep -y .
-$ debuild -uc -us
+```cli
+> apt-get source htop
+> cd htop-3.0.5/
+> sudo apt-get build-dep -y .
+> debuild -uc -us
 ```
 
-### Building custom packages with `buildpkgs`
+### Building custom packages with `makepkg`
 
-`buildpkgs` is a helper script to automate building custom packages. It can fetch sources based on a `pkg.conf` file. See [example-package/hello-world](example-package/hello-world) for an example.
+`makepkg` is a helper script to automate building custom packages. It can fetch sources based on a `pkg.conf` file. See [example-package/hello-world](example-package/hello-world) for an example.
 
 Example building `hello-world`:
 
+```cli
+> cd example-package/hello-world
+> makepkg
 ```
-$ buildpkgs -p example-package -o output build
+
+#### `makepkg` usage
+
+```cli
+❯ ./makepkg -h
+
+  usage: makepkg [-sqh]
+
+    -s, --source        Only fetch sources and exit
+    -q, --quiet         Do not output to stdout
+    -h, --help          Print this help and exit
+```
+
+### Updating checksum with `updpkgsum`
+
+`updpkgsum` downloads a distfile and writes it's SHA-256 checksum to `pkg.conf`
+
+```cli
+> cd example-package/hello-world
+> updpkgsum
+```
+
+### Generating repositories with `makerepo`
+
+> This example uses the output from [`hello-world`](#building-custom-packages-with-makepkg)
+
+`makerepo` searches for `.deb` files recursively, so these files need to be in a path below `pwd`.
+
+```cli
+> makerepo output
 ```
 
 This will produce packages, sources, and repository index files in `output/`:
 
-```
+```cli
 output
 ├── packages
 │   ├── hello-world_0.0.1-1_arm64.deb
@@ -47,23 +81,16 @@ output
     ├── hello-world_0.0.1.orig.tar.gz
     └── Sources.gz
 ```
+
 > note that packages are **not signed**.
 
-#### `buildpkgs` usage
+#### `makerepo` usage
 
-```
-usage: buildpkgs [-poqh] <command> [<package>]
+```cli
+❯ ./makerepo -h
 
--p, --packages-dir  Path to packages to build
--o, --output        Path to output built packages to
--q, --quiet         Do not output to stdout
--h, --help          Print this help and exit
+  usage: makerepo [-qh] OUTPUT_DIR
 
-command             Command to run. One of:
-
-    source          Fetch sources for <package>
-    build           Build package(s)
-
-package             Package in <packages-dir> to run
-                    <command> for
+    -q, --quiet         Do not output to stdout
+    -h, --help          Print this help and exit
 ```
