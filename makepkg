@@ -22,20 +22,10 @@ print_error() {
 print_usage() {
     cat <<HEREDOC >&2
 
-  usage: $(basename "${0}") [-poqh] <command> [<package>]
+  usage: $(basename "${0}") [-qh]
 
-    -p, --packages-dir  Path to packages to build
-    -o, --output        Path to output built packages to
     -q, --quiet         Do not output to stdout
     -h, --help          Print this help and exit
-
-    command             Command to run. One of:
-
-        source          Fetch sources for <package>
-        build           Build package(s)
-
-    package             Package in <packages-dir> to run
-                        <command> for
 
 HEREDOC
 }
@@ -46,8 +36,6 @@ checksum() {
 
 fetch_sources() {
     (
-    pushd "${1:?missing package name}"
-
     # shellcheck source=example-package/hello-world/pkg.conf
     source pkg.conf
 
@@ -82,9 +70,17 @@ fetch_sources() {
     )
 }
 
-build_package() {
-    (
-    pushd "${1:?missing package name}"
+_makepkg() {(
+    fetch_sources
+
+    case "${1:-}" in
+        -s|-S|--source)
+            return
+            ;;
+    esac
+
+    # Refresh package index for build dependencies
+    sudo apt-get update
 
     # shellcheck source=example-package/hello-world/pkg.conf
     source pkg.conf
@@ -103,35 +99,16 @@ build_package() {
     debuild --no-lintian -b -uc -us 2>&1
 
     debuild -- clean 2>&1
-    )
-}
-
-repo() {
-
-    print_info "Generating package indexes"
-
-    mkdir -p "$output_dir"/{sources,packages}
-
-    cp -v "$packages_dir"/*/{*.dsc,*.orig.tar*,*.debian.tar*} "$output_dir"/sources
-    cp -v "$packages_dir"/*/*.deb "$output_dir"/packages
-
-    # Generate package indexes
-    ( cd "$output_dir"; dpkg-scanpackages packages/ | gzip -9c > packages/Packages.gz )
-    ( cd "$output_dir"; dpkg-scansources sources/ | gzip -9c > sources/Sources.gz )
-}
+)}
 
 while true; do
     shiftpos=2
 
     case "${1:-}" in
-        -p|--packages-dir)
-            packages_dir="$2" ;;
         -q|--quiet)
             exec >> /dev/null
             shiftpos=1
             ;;
-        -o|--output)
-            output_dir="$2" ;;
         -h|--help)
             print_usage
             exit 0
@@ -142,31 +119,4 @@ while true; do
     shift "$shiftpos"
 done
 
-[ -z "${packages_dir:-}" ] && print_error "packages-dir is not set"
-
-case "${1:-}" in
-    source)
-        fetch_sources "$packages_dir/${2:?missing package name}"
-        exit $?
-        ;;
-    build)
-
-        [ -z "${output_dir:-}" ] && print_error "output is not set"
-
-        # Refresh package index for build dependencies
-        sudo apt-get update
-
-        # Build all packages
-        for p in "$packages_dir"/${2:-*}; do
-            fetch_sources "$p"
-            build_package "$p"
-        done
-
-        # Copy packages to $output_dir/ and generate indexes
-        repo
-        ;;
-    *)
-        print_usage
-        exit 1
-        ;;
-esac
+_makepkg "$@"
