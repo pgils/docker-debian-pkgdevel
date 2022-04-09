@@ -8,8 +8,8 @@ RUN echo "deb-src http://deb.debian.org/debian ${DEBIAN_RELEASE} main" \
     > /etc/apt/sources.list.d/main-src.list \
     \
     && apt-get update && apt-get install -qqy --no-install-recommends \
-    build-essential dpkg-dev dpatch fakeroot devscripts equivs lintian \
-    quilt curl vim sudo "bsdtar|libarchive-tools" \
+    build-essential dpkg-dev fakeroot devscripts equivs lintian quilt \
+    curl vim sudo "bsdtar|libarchive-tools" \
     && rm -rf /var/lib/apt/lists/* \
     \
     && useradd -m -s /bin/bash builder \
