@@ -26,37 +26,44 @@ checksum() {
     echo "$1 $2" | sha256sum -c - 2>/dev/null
 }
 
-fetch_sources() {
-    (
-    # shellcheck source=example-package/hello-world/pkg.conf
-    source pkg.conf
+fetch_dist() {
 
     print_info "Fetching sources for '$pkgname'"
 
-    dist_file="${dist##*/}"
+    dist_file="dist/${dist##*/}"
+    mkdir -p dist
 
     if ! checksum "${dist_sha256}" "${dist_file}"; then
         curl -sSfL -o "${dist_file}" "${dist}"
         checksum "${dist_sha256}" "${dist_file}"
     fi
 
-    # Store single-binary dist files in an archive
-    if [ "${dist_ext:-}" = "bin" ]; then
-        dist_ext=tar.gz
-        tar -czf "${dist_file}.${dist_ext}" \
-            --transform 's|^|src/|' "${dist_file}"
-        dist_file+=".${dist_ext}"
+    if tar -tf "${dist_file}" >/dev/null 2>&1; then
+        tar -xf "${dist_file}" --strip 1 -C "${source_dir}"
+    else
+        cp "${dist_file}" "${source_dir}"/
     fi
 
-    orig="${pkgname}_${pkgver}.orig.${dist_ext:-tar.gz}"
-    mv "${dist_file}" "${orig}"
+}
+
+fetch_sources() {
+    (
+    # shellcheck source=example-package/hello-world/pkg.conf
+    source pkg.conf
 
     source_dir="${pkgname}-${pkgver}"
 
     rm -rf "${source_dir}"
     mkdir "${source_dir}"
 
-    tar -xf "${orig}" --strip-components 1 -C "${source_dir}"
+    if [ -n "${dist:-}" ]; then
+        fetch_dist
+    else
+        print_info "No dist file for '$pkgname'"
+    fi
+
+    orig="${pkgname}_${pkgver}.orig.tar.gz"
+    tar -czf "$orig" --recursive "${source_dir}"
 
     cp -r debian "${source_dir}"/
     )
